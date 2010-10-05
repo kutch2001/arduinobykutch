@@ -6,7 +6,7 @@
 #define MOTHERBOARD 3 // ATMEGA168 0, SANGUINO 1, MOTHERBOARD = 2, MEGA 3, ATMEGA328 4
 
 //Use debugging or not..
-#define DEBUGGING true
+#define DEBUGGING false
 
 // MOTOR SUPPORT..
 const bool USE_MOTOR = true; //Set to false if using thermocouple
