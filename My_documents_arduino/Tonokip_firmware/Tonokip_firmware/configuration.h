@@ -49,17 +49,18 @@ const bool DISABLE_E = true;
 //invert direction
 const bool INVERT_X_DIR = false;
 const bool INVERT_Y_DIR = false;
-const bool INVERT_Z_DIR = true;
+const bool INVERT_Z_DIR = false;
 const bool INVERT_E_DIR = false;
 
 //Endstop Settings
 const bool ENDSTOPS_INVERTING = true;
 const bool min_software_endstops = false; //If true, axis won't move to coordinates less than zero.
 const bool max_software_endstops = true;  //If true, axis won't move to coordinates greater than the defined lengths below.
-const int X_MAX_LENGTH = 200;
-const int Y_MAX_LENGTH = 200;
-const int Z_MAX_LENGTH = 70;
+const int X_MAX_LENGTH = 100;
+const int Y_MAX_LENGTH = 100;
+const int Z_MAX_LENGTH = 60;
 
 #define BAUDRATE 115200
+#define MIN_TEMP 185
 
 #endif

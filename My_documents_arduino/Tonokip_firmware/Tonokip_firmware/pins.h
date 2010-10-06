@@ -232,7 +232,7 @@
 #define MOTOR_ENABLE_PIN   32  //enable pin (hopefully)
 
 #define LED_PIN            13
-#define FAN_PIN            -1
+#define FAN_PIN            11
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 

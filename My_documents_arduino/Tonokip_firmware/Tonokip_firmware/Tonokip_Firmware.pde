@@ -23,10 +23,15 @@
 // M103 - Turn Extruder off
 // M104 - Set target temp
 // M105 - Read current temp
+// M106 - Fan on
+// M107 - Fan off
 // M108 - Set extruder speed
 // M109 - Platform temp.
+// M118 - Set platform temp
+// M140 - Set platform temp
 
 //Custom M Codes
+// M18  - disable steppers (same as M84)
 // M80  - Turn on Power Supply
 // M81  - Turn off Power Supply
 // M82  - Set E codes absolute (default)
@@ -63,6 +68,7 @@ char *strchr_pointer; // just a pointer to find chars in the cmd string like X, 
 
 //manage heater variables
 int target_raw = 0;
+int target_min = 0;
 int target_platform = 0;
 int current_raw;
 int current_platform;
@@ -101,7 +107,7 @@ void setup()
   if(E_ENABLE_PIN > -1) pinMode(E_ENABLE_PIN,OUTPUT);
 
   if(HEATER_0_PIN > -1) pinMode(HEATER_0_PIN,OUTPUT);
-  
+  target_min = temp2analog(MIN_TEMP);  
   Serial.begin(BAUDRATE);
   Serial.println("start");
 }
@@ -312,9 +318,14 @@ inline void process_commands()
         Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
         if(!code_seen('N')) return;  // If M105 is sent from generated gcode, then it needs a response.
         break;
+      case 106: // M106
+        control_fan (1);
+        break;
+      case 107: // M107
+        control_fan (0);
+        break;
       case 108: // M108  set max extruder speed (0 - 255)
         if (code_seen('S')) extruder_speed = code_value();
-        Serial.println ("speed set");
         break;
       case 109: // M109 - Wait for heater to reach target.
         /*  This will be used to set temperature for bed/platform to conform to makerbot (will also use 140 for reprap)
@@ -332,7 +343,7 @@ inline void process_commands()
         if (code_seen('S')) target_platform = temp2analog(code_value());
         manage_platform ();
         break;
-      case 118:  // M110 - return temperature of base/platform - is there makerbot/reprap equivalent?
+      case 118:  // M118 - return temperature of base/platform - is there makerbot/reprap equivalent?
         Serial.print("T:");
         Serial.println( analog2temp(analogRead(TEMP_B_PIN)) ); 
         if(!code_seen('N')) return;  // If M105 is sent from generated gcode, then it needs a response.
@@ -340,6 +351,12 @@ inline void process_commands()
       case 140: // M140 - Wait for heater to reach target.
         if (code_seen('S')) target_platform = temp2analog(code_value());
         manage_platform ();
+        break;
+      case 18: // M18
+        disable_x();
+        disable_y();
+        disable_z();
+        disable_e();
         break;
       case 80: // M81 - ATX Power On
         if(PS_ON_PIN > -1) pinMode(PS_ON_PIN,OUTPUT); //GND
@@ -613,20 +630,23 @@ inline void do_z_step()
 
 inline void do_e_step()
 {
-  digitalWrite(E_STEP_PIN, HIGH);
+  if (USE_MOTOR == false)
+    {
+    digitalWrite(E_STEP_PIN, HIGH);
+    //delayMicroseconds(3);
+    digitalWrite(E_STEP_PIN, LOW);
+    }
   previous_micros_e = micros();
-  //delayMicroseconds(3);
-  digitalWrite(E_STEP_PIN, LOW);
 }
 
 inline void disable_x() { if(X_ENABLE_PIN > -1) digitalWrite(X_ENABLE_PIN,!X_ENABLE_ON); }
 inline void disable_y() { if(Y_ENABLE_PIN > -1) digitalWrite(Y_ENABLE_PIN,!Y_ENABLE_ON); }
 inline void disable_z() { if(Z_ENABLE_PIN > -1) digitalWrite(Z_ENABLE_PIN,!Z_ENABLE_ON); }
-inline void disable_e() { if(E_ENABLE_PIN > -1) digitalWrite(E_ENABLE_PIN,!E_ENABLE_ON); }
+inline void disable_e() { if(E_ENABLE_PIN > -1) { if (USE_MOTOR == false) { digitalWrite(E_ENABLE_PIN,!E_ENABLE_ON); } }; }
 inline void  enable_x() { if(X_ENABLE_PIN > -1) digitalWrite(X_ENABLE_PIN, X_ENABLE_ON); }
 inline void  enable_y() { if(Y_ENABLE_PIN > -1) digitalWrite(Y_ENABLE_PIN, Y_ENABLE_ON); }
 inline void  enable_z() { if(Z_ENABLE_PIN > -1) digitalWrite(Z_ENABLE_PIN, Z_ENABLE_ON); }
-inline void  enable_e() { if(E_ENABLE_PIN > -1) digitalWrite(E_ENABLE_PIN, E_ENABLE_ON); }
+inline void  enable_e() { if(E_ENABLE_PIN > -1) { if (USE_MOTOR == false) { digitalWrite(E_ENABLE_PIN, E_ENABLE_ON); } }; }
 
 inline void manage_heater()
 {
@@ -737,23 +757,23 @@ inline void set_direction(byte dir)
         switch (dir) {
         case 0: //reverse
           {
-          Serial.println ("reverse");
-  	  digitalWrite(E_DIR_PIN, LOW);
-	  digitalWrite(E_ENABLE_PIN, HIGH);
-          digitalWrite (MOTOR_ENABLE_PIN, HIGH);
-          break;
-          }
-        case 1: //forward
-          {
-          Serial.println ("forward");
+          if(DEBUGGING) { Serial.println ("reverse"); };
   	  digitalWrite(E_DIR_PIN, HIGH);
 	  digitalWrite(E_ENABLE_PIN, LOW);
           digitalWrite (MOTOR_ENABLE_PIN, HIGH);
           break;
           }
+        case 1: //forward
+          {
+          if(DEBUGGING) { Serial.println ("forward"); };
+  	  digitalWrite(E_DIR_PIN, LOW);
+	  digitalWrite(E_ENABLE_PIN, HIGH);
+          digitalWrite (MOTOR_ENABLE_PIN, HIGH);
+          break;
+          }
         case 2: //stop
           {
-          Serial.println ("stop");
+          if(DEBUGGING) { Serial.println ("stop"); };
           digitalWrite (MOTOR_ENABLE_PIN, LOW);
           digitalWrite (E_DIR_PIN, LOW);
           digitalWrite (E_ENABLE_PIN, LOW);
@@ -761,7 +781,7 @@ inline void set_direction(byte dir)
           }
         default:
           {
-          Serial.println ("default");
+          if(DEBUGGING) { Serial.println ("default"); };
           digitalWrite (MOTOR_ENABLE_PIN, LOW);
           digitalWrite (E_DIR_PIN, LOW);
           digitalWrite (E_ENABLE_PIN, LOW);
@@ -773,15 +793,41 @@ inline void set_speed(byte sp)
 {
       if(sp > 0)
           wait_till_hot();
-      Serial.println ("speed set");
+      if(DEBUGGING) { Serial.println ("speed set"); };
       analogWrite(E_STEP_PIN, sp);
       return;
+}
+
+inline void control_fan(byte dir)
+{
+//changed this around due to two pins on polulu motor controller that drive the voltage
+        switch (dir) {
+        case 0: //off
+          {
+          if(DEBUGGING) { Serial.println ("fan off"); };
+  	  digitalWrite(FAN_PIN, LOW);
+          break;
+          }
+        case 1: //on
+          {
+          if(DEBUGGING) { Serial.println ("fan on"); };
+  	  digitalWrite(FAN_PIN, HIGH);
+          break;
+          }
+        default: //default off
+          {
+          if(DEBUGGING) { Serial.println ("fan default"); };
+          digitalWrite (FAN_PIN, LOW);
+          }
+        }
 }
 
 byte wait_till_hot()
 { 
   oldT = get_extruder_temperature ();
-  while (oldT < target_raw)
+  //to prevent excessive stops obey minimum instead as temp will always fluctuate a little above and below
+  //while (oldT < target_raw)
+  while (oldT < target_min)
   {
 	manage_heater();
         newT = get_extruder_temperature();

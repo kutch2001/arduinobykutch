@@ -19,7 +19,28 @@
 
 short temptable[NUMTEMPS][2] = {
 
-   {1, 821},
+  //golly gee wiz, could figure out where makerbot thermistor table lived so grabbed that.
+  {1, 841},
+  {54, 255},
+  {107, 209},
+  {160, 184},
+  {213, 166},
+  {266, 153},
+  {319, 142},
+  {372, 132},
+  {425, 124},
+  {478, 116},
+  {531, 108},
+  {584, 101},
+  {637, 93},
+  {690, 86},
+  {743, 78},
+  {796, 70},
+  {849, 61},
+  {902, 50},
+  {955, 34},
+  {1008, 3}
+/*   {1, 821},
    {54, 252},
    {107, 207},
    {160, 182},
@@ -38,7 +59,7 @@ short temptable[NUMTEMPS][2] = {
    {849, 60},
    {902, 49},
    {955, 34},
-   {1008, 3}
+   {1008, 3} */ //This is a table got from someplace, don't remember where
  };
 
 
