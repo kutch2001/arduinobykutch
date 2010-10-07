@@ -20,13 +20,16 @@ const bool USE_THERMISTOR = true; //Set to false if using thermocouple
 // units are in millimeters or whatever length unit you prefer: inches,football-fields,parsecs etc
 
 //Calibration variables
-float x_steps_per_unit = 80.376;
-float y_steps_per_unit = 80.376;
-//changed for axis z-roids
-float z_steps_per_unit = 3333.592;
+float x_steps_per_unit = 100.47;
+float y_steps_per_unit = 100.47;
+//float x_steps_per_unit = 80.376;
+//float y_steps_per_unit = 80.376;
+//changed for axis z-roids - roughly calibrated
+float z_steps_per_unit = 1322.633;
 //float z_steps_per_unit = 6667.184;
 float e_steps_per_unit = 16;
 float max_feedrate = 18000;
+float z_feedrate = 150;
 
 //float x_steps_per_unit = 10.047;
 //float y_steps_per_unit = 10.047;
@@ -61,6 +64,6 @@ const int Y_MAX_LENGTH = 100;
 const int Z_MAX_LENGTH = 60;
 
 #define BAUDRATE 115200
-#define MIN_TEMP 185
+#define TEMP_VARIANCE 4
 
 #endif

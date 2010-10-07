@@ -68,13 +68,14 @@ char *strchr_pointer; // just a pointer to find chars in the cmd string like X, 
 
 //manage heater variables
 int target_raw = 0;
-int target_min = 0;
+int target_var = 0;
 int target_platform = 0;
 int current_raw;
 int current_platform;
 int oldT;
 int newT;
 unsigned long platformrelayTime = 0;  //last time platform relay was activated
+unsigned long extruderheaterTime = 0;  //last time extruder heater was activated
 
 //Inactivity shutdown variables
 unsigned long previous_millis_cmd=0;
@@ -107,7 +108,6 @@ void setup()
   if(E_ENABLE_PIN > -1) pinMode(E_ENABLE_PIN,OUTPUT);
 
   if(HEATER_0_PIN > -1) pinMode(HEATER_0_PIN,OUTPUT);
-  target_min = temp2analog(MIN_TEMP);  
   Serial.begin(BAUDRATE);
   Serial.println("start");
 }
@@ -229,7 +229,8 @@ inline void process_commands()
 
         #define X_TIME_FOR_MOVE ((float)x_steps_to_take / (x_steps_per_unit*feedrate/60000000))
         #define Y_TIME_FOR_MOVE ((float)y_steps_to_take / (y_steps_per_unit*feedrate/60000000))
-        #define Z_TIME_FOR_MOVE ((float)z_steps_to_take / (z_steps_per_unit*feedrate/60000000))
+        #define Z_TIME_FOR_MOVE ((float)z_steps_to_take / (z_steps_per_unit*z_feedrate/60000000))
+        //#define Z_TIME_FOR_MOVE ((float)z_steps_to_take / (z_steps_per_unit*feedrate/60000000))
         #define E_TIME_FOR_MOVE ((float)e_steps_to_take / (e_steps_per_unit*feedrate/60000000))
         
         time_for_move = max(X_TIME_FOR_MOVE,Y_TIME_FOR_MOVE);
@@ -312,6 +313,7 @@ inline void process_commands()
         break;
       case 104: // M104
         if (code_seen('S')) target_raw = temp2analog(code_value());
+        set_variance ();
         break;
       case 105: // M105
         Serial.print("T:");
@@ -651,8 +653,19 @@ inline void  enable_e() { if(E_ENABLE_PIN > -1) { if (USE_MOTOR == false) { digi
 inline void manage_heater()
 {
   current_raw = get_extruder_temperature ();
-  if(current_raw >= target_raw) digitalWrite(HEATER_0_PIN,LOW);
-  else digitalWrite(HEATER_0_PIN,HIGH);
+  if (millis() > extruderheaterTime) //only activate/deactivate after 1/2 second to prevent rapid on/off
+    {
+    if(current_raw >= target_raw)
+      {
+      digitalWrite(HEATER_0_PIN,LOW);
+      extruderheaterTime = millis() + 500;
+      }
+    else
+      {
+      digitalWrite(HEATER_0_PIN,HIGH);
+      extruderheaterTime = millis() + 500;
+      }
+    }
   //if(current_raw >= target_raw) Serial.println ("heater low");
   //else Serial.println ("heater high");
 }
@@ -666,12 +679,12 @@ inline void manage_platform()  //copy/paste of manage_heater (almost)
      if(current_platform >= target_platform)
        {
         digitalWrite(BASE_HEATER_PIN,LOW);
-        platformrelayTime = platformrelayTime + 250; //wait less than 1 second to see if need to turn platform on
+        platformrelayTime = millis() + 250; //wait less than 1 second to see if need to turn platform on
        }
      else
        {
         digitalWrite(BASE_HEATER_PIN,HIGH);
-        platformrelayTime = platformrelayTime + 2000;  //wait 2 seconds before seeing if temp is lower
+        platformrelayTime = millis() + 2000;  //wait 2 seconds before seeing if temp is lower
        }
     }
   //if(current_raw >= target_raw) Serial.println ("heater low");
@@ -798,6 +811,28 @@ inline void set_speed(byte sp)
       return;
 }
 
+inline void set_variance ()
+{
+  //only figure out when real value is set
+  if (target_raw > 50)
+    {
+    target_var = target_raw - temp2analog(TEMP_VARIANCE);
+    }
+  else
+    {
+    target_var = target_raw;
+    };
+  if(DEBUGGING)
+    {
+    Serial.print ("target_var :");
+    Serial.println (target_var);
+    Serial.print ("target_raw :");
+    Serial.println (target_raw);
+    Serial.print ("temp_variance :");
+    Serial.println (temp2analog(TEMP_VARIANCE));
+    }
+}
+
 inline void control_fan(byte dir)
 {
 //changed this around due to two pins on polulu motor controller that drive the voltage
@@ -825,9 +860,9 @@ inline void control_fan(byte dir)
 byte wait_till_hot()
 { 
   oldT = get_extruder_temperature ();
-  //to prevent excessive stops obey minimum instead as temp will always fluctuate a little above and below
+  //to prevent excessive stops obey variance instead as temp will always fluctuate a little above and below
   //while (oldT < target_raw)
-  while (oldT < target_min)
+  while (oldT < target_var)
   {
 	manage_heater();
         newT = get_extruder_temperature();
