@@ -44,8 +44,8 @@ const bool Z_ENABLE_ON = 0;
 const bool E_ENABLE_ON = 0;
 
 //Disables axis when it's not being used.
-const bool DISABLE_X = true;
-const bool DISABLE_Y = true;
+const bool DISABLE_X = false;
+const bool DISABLE_Y = false;
 const bool DISABLE_Z = true;
 const bool DISABLE_E = true;
 
@@ -64,6 +64,6 @@ const int Y_MAX_LENGTH = 100;
 const int Z_MAX_LENGTH = 60;
 
 #define BAUDRATE 115200
-#define TEMP_VARIANCE 4
+#define TEMP_VARIANCE 10
 
 #endif
