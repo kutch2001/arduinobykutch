@@ -679,7 +679,7 @@ inline void manage_platform()  //copy/paste of manage_heater (almost)
      if(current_platform >= target_platform)
        {
         digitalWrite(BASE_HEATER_PIN,LOW);
-        platformrelayTime = millis() + 250; //wait less than 1 second to see if need to turn platform on
+        platformrelayTime = millis() + 1000; //wait 1 second to see if need to turn platform on
        }
      else
        {
