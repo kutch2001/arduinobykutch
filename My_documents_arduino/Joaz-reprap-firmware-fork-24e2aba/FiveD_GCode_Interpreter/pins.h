@@ -175,10 +175,10 @@
 #define Z_STEP_PIN (byte)44
 #define Z_DIR_PIN (byte)46
 #define Z_MIN_PIN (byte)18
-#define Z_MAX_PIN (byte)1
+#define Z_MAX_PIN (byte)19
 #define Z_ENABLE_PIN (byte)42
 
-#define BASE_HEATER_PIN   (byte)12
+#define BASE_HEATER_PIN   (byte)11
 #define POWER_SUPPLY_PIN (byte)-1
 
 
@@ -187,9 +187,9 @@
 #define EXTRUDER_0_MOTOR_DIR_PIN     (byte)30
 //Add new extruder direction pin due to polulu TB6612FNG
 #define EXTRUDER_0_MOTOR_DIR_PINB    (byte)31
-#define EXTRUDER_0_HEATER_PIN        (byte)6
+#define EXTRUDER_0_HEATER_PIN        (byte)12
 #define EXTRUDER_0_FAN_PIN           (byte)-1
-#define EXTRUDER_0_TEMPERATURE_PIN  (byte)0    // 57 Analogue input 3
+#define EXTRUDER_0_TEMPERATURE_PIN  (byte)2    // 57 Analogue input 3
 #define EXTRUDER_0_VALVE_DIR_PIN     (byte)-1
 #define EXTRUDER_0_VALVE_ENABLE_PIN  (byte)-1  // Valve needs to be redesigned not to need this
 #define EXTRUDER_0_STEP_ENABLE_PIN  (signed int)-1

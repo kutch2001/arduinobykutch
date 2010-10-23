@@ -255,15 +255,37 @@ void extruder::manage()
   
         //put the heater into high mode if we're not at our target.
         if (current_celsius < target_celsius)
-                newheat = heater_high;
+               {
+                  digitalWrite(heater_pin, HIGH);
+                  //Serial.println("heater high");
+                //newheat = heater_high;
+               }
         //put the heater on low if we're at our target.
         else if (current_celsius < max_celsius)
-                newheat = heater_low;
-        
+               {
+                  digitalWrite(heater_pin, LOW);
+                  //Serial.println ("heater low");
+                //newheat = heater_low;
+               }
+        else
+                  digitalWrite(heater_pin, LOW);
         // Only update heat if it changed
         if (heater_current != newheat) {
+        //Serial.print ("newheat :");
+        //Serial.print (newheat / 4, BYTE);
+        //Serial.println (": end");
+        /*        if (newheat = 255)
+                  {
+                  digitalWrite(heater_pin, HIGH);
+                  Serial.println("heater high");
+                  }
+                else
+                  {
+                  digitalWrite(heater_pin, LOW);
+                  Serial.println ("heater low");
+                  } */
                 heater_current = newheat;
-                analogWrite(heater_pin, heater_current);
+                //analogWrite(heater_pin, heater_current);
         }
 }
 

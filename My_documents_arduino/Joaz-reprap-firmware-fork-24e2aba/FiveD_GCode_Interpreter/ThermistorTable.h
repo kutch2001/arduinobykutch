@@ -10,7 +10,7 @@
 #define TEMPERATURE_SAMPLES 3
 
 // How accurately do we maintain the temperature?
-#define HALF_DEAD_ZONE 5
+#define HALF_DEAD_ZONE 8
 
 // Thermistor lookup table for RepRap Temperature Sensor Boards (http://make.rrrf.org/ts)
 // Table derived from table in data sheet http://www.epcos.com/inf/50/db/ntc_06/GESensors__B57560__G560.pdf
@@ -18,7 +18,28 @@
 // max adc: 1022
 //
 short temptable[][2] = {
-{	23	,	300	},
+   {1, 821},
+   {54, 252},
+   {107, 207},
+   {160, 182},
+   {213, 165},
+   {266, 152},
+   {319, 141},
+   {372, 131},
+   {425, 123},
+   {478, 115},
+   {531, 107},
+   {584, 100},
+   {637, 93},
+   {690, 86},
+   {743, 78},
+   {796, 70},
+   {849, 60},
+   {902, 49},
+   {955, 34},
+   {1008, 3}
+
+/*{	23	,	300	},
 {	25	,	295	},
 {	27	,	290	},
 {	28	,	285	},
@@ -79,7 +100,7 @@ short temptable[][2] = {
 {	999	,	10	},
 {	1004	,	5	},
 {	1008	,	0	},
-
+*/
 };
 #define NUMTEMPS (sizeof(temptable) / sizeof(temptable[0]))
 
