@@ -1,0 +1,40 @@
+8
+
+dir
+979
+http://arduino.googlecode.com/svn/trunk/libraries/Ethernet/examples/ChatServer
+http://arduino.googlecode.com/svn
+
+
+
+2009-12-18T16:05:52.080673Z
+804
+dmellis
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+5a7bb8b8-8b4a-0410-973d-494203d638bc
+
+ChatServer.pde
+file
+
+
+
+
+2010-05-19T23:00:24.000000Z
+232d4d5be7f395959e5b5666fae6b0bc
+2009-12-18T16:05:52.080673Z
+804
+dmellis
+

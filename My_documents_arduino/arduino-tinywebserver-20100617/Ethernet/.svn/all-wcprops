@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/!svn/ver/959/trunk/libraries/Ethernet
+END
+Client.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Client.cpp
+END
+Ethernet.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Ethernet.cpp
+END
+Client.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Client.h
+END
+Ethernet.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Ethernet.h
+END
+keywords.txt
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/959/trunk/libraries/Ethernet/keywords.txt
+END
+Server.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Server.cpp
+END
+Server.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/959/trunk/libraries/Ethernet/Server.h
+END
