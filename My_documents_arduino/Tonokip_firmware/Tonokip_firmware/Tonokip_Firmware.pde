@@ -108,8 +108,13 @@ void setup()
   if(E_ENABLE_PIN > -1) pinMode(E_ENABLE_PIN,OUTPUT);
 
   if(HEATER_0_PIN > -1) pinMode(HEATER_0_PIN,OUTPUT);
+  if(BASE_HEATER_PIN > -1) pinMode(BASE_HEATER_PIN,OUTPUT);
   Serial.begin(BAUDRATE);
   Serial.println("start");
+  if(USE_THERMISTOR) {pinMode(TEMP_0_PIN,INPUT);}
+    else {pinMode (THERMI_O_PIN,INPUT); pinMode(THERMI_O_PWR,OUTPUT); digitalWrite (THERMI_O_PWR,HIGH);}
+  if(USE_HBP_THERMISTOR) {pinMode(TEMP_B_PIN,INPUT); Serial.println ("temp_b");}
+    else {pinMode (THERMI_B_PIN,INPUT); pinMode(THERMI_B_PWR,OUTPUT); digitalWrite (THERMI_B_PWR,HIGH); Serial.println ("THERMI_b");}
 }
 
 
@@ -312,12 +317,17 @@ inline void process_commands()
         set_speed (0);
         break;
       case 104: // M104
-        if (code_seen('S')) target_raw = temp2analog(code_value());
+        //if (code_seen('S')) target_raw = temp2analog(code_value());
+        if (code_seen('S')) target_raw = code_value();
         set_variance ();
         break;
       case 105: // M105
         Serial.print("T:");
-        Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
+        //Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
+        if (USE_THERMISTOR) {Serial.println( analog2temp(TEMP_0_PIN) );}
+          else {Serial.println( analog2temp(THERMI_O_PIN) );}
+        //if (USE_THERMISTOR) {Serial.print ("M105 pin "); Serial.println( TEMP_0_PIN );}
+        //  else {Serial.print ("M105 pin "); Serial.println( THERMI_O_PIN );}
         if(!code_seen('N')) return;  // If M105 is sent from generated gcode, then it needs a response.
         break;
       case 106: // M106
@@ -342,16 +352,20 @@ inline void process_commands()
           }
           manage_heater();
         } */
-        if (code_seen('S')) target_platform = temp2analog(code_value());
+        if (code_seen('S')) target_platform = code_value();
         manage_platform ();
         break;
       case 118:  // M118 - return temperature of base/platform - is there makerbot/reprap equivalent?
         Serial.print("T:");
-        Serial.println( analog2temp(analogRead(TEMP_B_PIN)) ); 
+        //Serial.println( analog2temp(analogRead(TEMP_B_PIN)) ); 
+        if (USE_HBP_THERMISTOR) {Serial.println( analog2temp(TEMP_B_PIN) ); }
+          else {Serial.println( analog2temp(THERMI_B_PIN) ); }
         if(!code_seen('N')) return;  // If M105 is sent from generated gcode, then it needs a response.
+        //if (USE_HBP_THERMISTOR) {Serial.print ("M118 pin "); Serial.println( TEMP_B_PIN ); }
+        //  else {Serial.print ("M118 pin "); Serial.println( THERMI_B_PIN ); }
         break;
       case 140: // M140 - Wait for heater to reach target.
-        if (code_seen('S')) target_platform = temp2analog(code_value());
+        if (code_seen('S')) target_platform = code_value();
         manage_platform ();
         break;
       case 18: // M18
@@ -679,65 +693,43 @@ inline void manage_platform()  //copy/paste of manage_heater (almost)
      if(current_platform >= target_platform)
        {
         digitalWrite(BASE_HEATER_PIN,LOW);
-        platformrelayTime = millis() + 1000; //wait 1 second to see if need to turn platform on
+        platformrelayTime = millis() + 1000; //wait 30 seconds to see if need to turn platform on
        }
      else
        {
         digitalWrite(BASE_HEATER_PIN,HIGH);
-        platformrelayTime = millis() + 2000;  //wait 2 seconds before seeing if temp is lower
+        platformrelayTime = millis() + 2000;  //wait 30 seconds before seeing if temp is lower
        }
     }
   //if(current_raw >= target_raw) Serial.println ("heater low");
   //else Serial.println ("heater high");
 }
 
-// Takes temperature value as input and returns corresponding analog value from RepRap thermistor temp table.
-// This is needed because PID in hydra firmware hovers around a given analog value, not a temp value.
-// This function is derived from inversing the logic from a portion of getTemperature() in FiveD RepRap firmware.
-float temp2analog(int celsius) {
-  if(USE_THERMISTOR) {
-    int raw = 0;
-    byte i;
-    
-    for (i=1; i<NUMTEMPS; i++)
-    {
-      if (temptable[i][1] < celsius)
-      {
-        raw = temptable[i-1][0] + 
-          (celsius - temptable[i-1][1]) * 
-          (temptable[i][0] - temptable[i-1][0]) /
-          (temptable[i][1] - temptable[i-1][1]);
-      
-        break;
-      }
-    }
-
-    // Overflow: Set to last value in the table
-    if (i == NUMTEMPS) raw = temptable[i-1][0];
-
-    return 1023 - raw;
-  } else {
-    return celsius * (1024.0/(5.0*100.0));
+// Derived from RepRap FiveD extruder::getTemperature()
+//NOTE  Reworked to take in pin, then determine if to use thermistor or thermocouple, and return temp
+float analog2temp(int heater_pin) {
+  int heater_raw = analogRead (heater_pin);
+  //Serial.print ("heater_pin "); Serial.print (heater_pin); Serial.print (" raw "); Serial.println (heater_raw);
+  if(DEBUGGING) {
+    Serial.print ("heater_pin "); Serial.println (heater_pin);
+    Serial.print ("celsius "); Serial.println (heater_raw); };
+  if(USE_THERMISTOR && heater_pin == TEMP_0_PIN) {
+    //Serial.println ("use_thermistor & temp_o_pin");
+    return thermistor_lookup (heater_raw);
+  } else if (heater_pin == TEMP_0_PIN) { //using thermocouple
+    //Serial.println ("temp_o_pin");
+    return thermocouple_calc (heater_raw);
+  } else if (USE_HBP_THERMISTOR && heater_pin == TEMP_B_PIN) {
+    //Serial.println ("use_hbp_thermistor & temp_b_pin");
+    return thermistor_lookup (heater_raw);
+  } else if (heater_pin == THERMI_B_PIN) { //using thermocouple
+    //Serial.println ("temp_b_pin");
+    return thermocouple_calc (heater_raw);
   }
 }
 
-//returns extruder temperature from one place with how it was used..  :(
-int get_extruder_temperature () {
-  current_raw = analogRead(TEMP_0_PIN);                  // If using thermistor, when the heater is colder than targer temp, we get a higher analog reading than target, 
-  if(USE_THERMISTOR) current_raw = 1023 - current_raw;   // this switches it up so that the reading appears lower than target for the control logic.
-  return current_raw;
-}
-
-//returns platform temperature from one place with how it was used..  :(
-int get_platform_temperature () {
-  current_platform = analogRead(TEMP_B_PIN);                  // If using thermistor, when the platform is colder than targer temp, we get a higher analog reading than target, 
-  if(USE_THERMISTOR) current_platform = 1023 - current_platform;   // this switches it up so that the reading appears lower than target for the control logic.
-  return current_platform;
-}
-
-// Derived from RepRap FiveD extruder::getTemperature()
-float analog2temp(int raw) {
-  if(USE_THERMISTOR) {
+//lookup thermistor value in table, moved from temp2analog method
+int thermistor_lookup (int raw) {
     int celsius = 0;
     byte i;
 
@@ -758,10 +750,33 @@ float analog2temp(int raw) {
     if (i == NUMTEMPS) celsius = temptable[i-1][1];
 
     return celsius;
-    
-  } else {
-    return raw * ((5.0*100.0)/1024.0);
-  }
+}
+
+int thermocouple_calc (int raw) {
+  if (DEBUGGING) { Serial.print ("thermocouple raw "); Serial.println (raw); }
+  return (raw * 500.0) / 1024.0;
+  //return celsius * (1024.0/(5.0*100.0)); original value for different thermistor than what I have
+}
+//returns extruder temperature from one place with how it was used..  :(
+int get_extruder_temperature () {
+  //current_raw = analogRead(TEMP_0_PIN);                  // If using thermistor, when the heater is colder than targer temp, we get a higher analog reading than target, 
+  //if(USE_THERMISTOR) current_raw = 1023 - current_raw;   // this switches it up so that the reading appears lower than target for the control logic.
+  //return current_raw;
+  //if (USE_THERMISTOR) {Serial.print ("get_extruder_temp "); Serial.println (TEMP_0_PIN);}
+  //  else {Serial.print ("get_extruder_temp "); Serial.println (THERMI_O_PIN);}
+  if (USE_THERMISTOR) {return analog2temp (TEMP_0_PIN);}
+    else {return analog2temp (THERMI_O_PIN);}
+}
+
+//returns platform temperature from one place with how it was used..  :(
+int get_platform_temperature () {
+  //current_platform = analogRead(TEMP_B_PIN);                  // If using thermistor, when the platform is colder than targer temp, we get a higher analog reading than target, 
+  //if(USE_HBP_THERMISTOR) current_platform = 1023 - current_platform;   // this switches it up so that the reading appears lower than target for the control logic.
+  //return current_platform;
+  //if (USE_HBP_THERMISTOR) {Serial.print ("get_platform_temp "); Serial.println (TEMP_B_PIN);}
+  //  else {Serial.print ("get_platform_temp "); Serial.println (THERMI_B_PIN);}
+  if (USE_HBP_THERMISTOR) {return analog2temp (TEMP_B_PIN);}
+    else {return analog2temp (THERMI_B_PIN);}
 }
 
 inline void set_direction(byte dir)
@@ -814,9 +829,9 @@ inline void set_speed(byte sp)
 inline void set_variance ()
 {
   //only figure out when real value is set
-  if (target_raw > 50)
+  if (target_raw > 20)
     {
-    target_var = target_raw - temp2analog(TEMP_VARIANCE);
+    target_var = target_raw - TEMP_VARIANCE;
     }
   else
     {
@@ -829,7 +844,7 @@ inline void set_variance ()
     Serial.print ("target_raw :");
     Serial.println (target_raw);
     Serial.print ("temp_variance :");
-    Serial.println (temp2analog(TEMP_VARIANCE));
+    Serial.println (TEMP_VARIANCE);
     }
 }
 
@@ -869,7 +884,11 @@ byte wait_till_hot()
         if(newT > oldT)
            oldT = newT;
         Serial.print("T:");
-        Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
+        //Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
+        //if (USE_THERMISTOR) {Serial.print ("wait_till_hot "); Serial.println( TEMP_0_PIN );}
+        //  else {Serial.print ("wait_till_hot "); Serial.println( THERMI_O_PIN );}
+        if (USE_THERMISTOR) {Serial.println( analog2temp(TEMP_0_PIN) );}
+          else {Serial.println( analog2temp(THERMI_O_PIN) );}
         previous_millis_heater = millis(); 
 	delay(1000);
   }

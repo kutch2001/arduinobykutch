@@ -13,6 +13,7 @@ const bool USE_MOTOR = true; //Set to false if using thermocouple
 
 // THERMOCOUPLE SUPPORT UNTESTED... USE WITH CAUTION!!!!
 const bool USE_THERMISTOR = true; //Set to false if using thermocouple
+const bool USE_HBP_THERMISTOR = false; //Set to false if using thermocouple for HBP
 
 // Calibration formulas
 // e_extruded_steps_per_mm = e_feedstock_steps_per_mm * (desired_extrusion_diameter^2 / feedstock_diameter^2)
@@ -29,7 +30,7 @@ float z_steps_per_unit = 1322.633;
 //float z_steps_per_unit = 6667.184;
 float e_steps_per_unit = 16;
 float max_feedrate = 18000;
-float z_feedrate = 150;
+float z_feedrate = 90;
 
 //float x_steps_per_unit = 10.047;
 //float y_steps_per_unit = 10.047;

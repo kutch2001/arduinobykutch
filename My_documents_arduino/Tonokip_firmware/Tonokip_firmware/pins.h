@@ -240,7 +240,10 @@
 #define HEATER_0_PIN       12
 #define TEMP_0_PIN          2   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
 #define TEMP_B_PIN          1   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-
+#define THERMI_O_PIN       14   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define THERMI_B_PIN       15   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define THERMI_O_PWR       52   // provide power for thermister
+#define THERMI_B_PWR       53   // provide power for thermister
 
 
 
