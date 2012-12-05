@@ -21,12 +21,15 @@ const bool USE_HBP_THERMISTOR = false; //Set to false if using thermocouple for 
 // units are in millimeters or whatever length unit you prefer: inches,football-fields,parsecs etc
 
 //Calibration variables
-float x_steps_per_unit = 100.47;
-float y_steps_per_unit = 100.47;
+float x_steps_per_unit = 90.47;
+float y_steps_per_unit = 90.47;
+/*float x_steps_per_unit = 100.47;
+float y_steps_per_unit = 100.47;  - commented out 11/24/2012 as sizes were off last time printed, by about 10%*/
 //float x_steps_per_unit = 80.376;
 //float y_steps_per_unit = 80.376;
 //changed for axis z-roids - roughly calibrated
-float z_steps_per_unit = 1322.633;
+float z_steps_per_unit = 1210.37;
+//float z_steps_per_unit = 1322.633;  - commented out 11/24/2012 as sizes were off last time printed, by about 10%*/
 //float z_steps_per_unit = 6667.184;
 float e_steps_per_unit = 16;
 float max_feedrate = 18000;
