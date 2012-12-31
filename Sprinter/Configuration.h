@@ -32,12 +32,14 @@
 
 //// Calibration variables
 // X, Y, Z, E steps per unit - Metric Prusa Mendel with Wade extruder:
-#define _AXIS_STEP_PER_UNIT {80, 80, 3200/1.25,700}
+//#define _AXIS_STEP_PER_UNIT {80, 80, 3200/1.25,700}
 // Metric Prusa Mendel with Makergear geared stepper extruder:
 //#define _AXIS_STEP_PER_UNIT {80,80,3200/1.25,1380}
 // MakerGear Hybrid Prusa Mendel:
 // Z axis value is for .9 stepper(if you have 1.8 steppers for Z, you need to use 2272.7272)
 //#define _AXIS_STEP_PER_UNIT {104.987, 104.987, 4545.4544, 1487}
+//Cupcake with ACME rods
+#define _AXIS_STEP_PER_UNIT {90, 90, 1210,16}
 
 
 //// Endstop Settings
@@ -119,7 +121,7 @@ const bool DISABLE_E = false;
 //-----------------------------------------------------------------------
 const bool INVERT_X_DIR = false;
 const bool INVERT_Y_DIR = false;
-const bool INVERT_Z_DIR = true;
+const bool INVERT_Z_DIR = false;
 const bool INVERT_E_DIR = false;
 
 //-----------------------------------------------------------------------

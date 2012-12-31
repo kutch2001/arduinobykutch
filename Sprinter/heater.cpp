@@ -734,7 +734,13 @@ void PID_autotune(int PIDAT_test_temp)
   
     // If using thermistor, when the heater is colder than targer temp, we get a higher analog reading than target, 
     // this switches it up so that the reading appears lower than target for the control logic.
-    current_bed_raw = 1023 - current_bed_raw;
+    //current_bed_raw = 1023 - current_bed_raw;
+    #ifdef DEBUG_HEAT_MGMT
+      log_int("_HEAT_MGMT - current_bed_raw", current_bed_raw);
+      log_int("_HEAT_MGMT - target_bed_raw", target_bed_raw);
+      log_int("_HEAT_MGMT - BNUMTEMPS", BNUMTEMPS);
+    #endif               
+  
   #elif defined BED_USES_AD595
     current_bed_raw = analogRead(TEMP_1_PIN);                  
 

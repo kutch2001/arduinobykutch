@@ -190,10 +190,14 @@ void __cxa_pure_virtual(){};
 // G92 - Set current position to cordinates given
 
 //RepRap M Codes
+// M101 - Turn Extruder on - forward
+// M102 - Turn Extruder on - reverse
+// M103 - Turn Extruder off
 // M104 - Set extruder target temp
 // M105 - Read current temp
 // M106 - Fan on
 // M107 - Fan off
+// M108 - Set extruder speed
 // M109 - Wait for extruder current temp to reach target temp.
 // M114 - Display current position
 
@@ -377,6 +381,10 @@ unsigned long stepper_inactive_time = 0;
 //Temp Monitor for repetier
 unsigned char manage_monitor = 255;
 
+//extruder variables for motor
+float extruder_speed = 0;
+int oldT;
+int newT;
 
 //------------------------------------------------
 //Init the SD card 
@@ -688,6 +696,10 @@ void setup()
   }
   
 
+//Provide power to measure temps
+ 
+    pinMode(THERMI_B_PWR,OUTPUT); 
+    digitalWrite (THERMI_B_PWR,HIGH); 
   
   //Initialize Dir Pins
   #if X_DIR_PIN > -1
@@ -1467,6 +1479,17 @@ FORCE_INLINE void process_commands()
           }
         }
         break;
+      case 101: // M101  forward
+        set_direction(1);
+        set_speed (extruder_speed);
+        break;
+      case 102: // M102  reverse
+        set_direction(0);
+        set_speed (extruder_speed);
+        break;
+      case 103: // M103  stop
+        set_speed (0);
+        break;
       case 104: // M104
 #ifdef CHAIN_OF_COMMAND
           st_synchronize(); // wait for all movements to finish
@@ -1529,6 +1552,9 @@ FORCE_INLINE void process_commands()
         #endif
         return;
         //break;
+      case 108: // M108  set max extruder speed (0 - 255)
+        if (code_seen('S')) extruder_speed = code_value();
+        break;
       case 109: { // M109 - Wait for extruder heater to reach target.
 #ifdef CHAIN_OF_COMMAND
           st_synchronize(); // wait for all movements to finish
@@ -3588,3 +3614,116 @@ void log_ulong_array(char* message, unsigned long value[], int array_lenght) {
 }
 #endif
 
+inline void set_direction(byte dir)
+{
+  //changed this around due to two pins on polulu motor controller that drive the voltage
+  switch (dir) {
+  case 0: //reverse
+    {
+      #ifdef DEBUG
+        log_message ("reverse")
+      #endif
+      digitalWrite(E_DIR_PIN, HIGH);
+      digitalWrite(E_ENABLE_PIN, LOW);
+      digitalWrite (MOTOR_ENABLE_PIN, HIGH);
+      break;
+    }
+  case 1: //forward
+    {
+      #ifdef DEBUG
+        log_message ("forward")
+      #endif
+      digitalWrite(E_DIR_PIN, LOW);
+      digitalWrite(E_ENABLE_PIN, HIGH);
+      digitalWrite (MOTOR_ENABLE_PIN, HIGH);
+      break;
+    }
+  case 2: //stop
+    {
+      #ifdef DEBUG
+        log_message ("stop")
+      #endif
+      digitalWrite (MOTOR_ENABLE_PIN, LOW);
+      digitalWrite (E_DIR_PIN, LOW);
+      digitalWrite (E_ENABLE_PIN, LOW);
+      break;
+    }
+  default:
+    {
+      #ifdef DEBUG
+        log_message ("default")
+      #endif
+      digitalWrite (MOTOR_ENABLE_PIN, LOW);
+      digitalWrite (E_DIR_PIN, LOW);
+      digitalWrite (E_ENABLE_PIN, LOW);
+    }
+  }
+}
+
+inline void set_speed(byte sp)
+{
+  /*if(sp > 0)
+    wait_till_hot();*/
+  #ifdef DEBUG
+    log_message ("speed set")
+  #endif
+  analogWrite(E_STEP_PIN, sp);
+  return;
+}
+
+/*byte wait_till_hot()
+{ 
+  unsigned long codenum; //throw away variable
+  oldT = get_extruder_temperature ();
+  //to prevent excessive stops obey variance instead as temp will always fluctuate a little above and below
+  //while (oldT < target_raw)
+  codenum = millis(); 
+  while (oldT >= target_raw)
+   {
+     manage_heater();
+     newT = get_extruder_temperature();
+     //Subtract 10 from new temperature as a variance
+     if(newT < oldT) {
+       oldT = newT;
+       Serial.println( "setting to exit" ); }
+     else
+       { delay (500); }
+       
+     //Serial.println( analog2temp(analogRead(TEMP_0_PIN)) ); 
+     //if (USE_THERMISTOR) {Serial.print ("wait_till_hot "); Serial.println( TEMP_0_PIN );}
+     //  else {Serial.print ("wait_till_hot "); Serial.println( THERMI_O_PIN );}
+     if( (millis()-codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
+        {
+        hotendtC=analog2temp(current_raw);
+        showString(PSTR("T:"));
+        Serial.print( hotendtC );
+        showString(PSTR(" B:"));
+        Serial.println( analog2tempBed(current_bed_raw) ); 
+        codenum = millis(); 
+     };
+     Serial.print( "wait_till_hot " ); 
+     Serial.print( "newT: " );
+     Serial.print( newT );
+     Serial.print( " oldT: " );
+     Serial.println( oldT );
+     
+   }
+}
+
+//returns extruder temperature from one place with how it was used..  :(
+int get_extruder_temperature () {
+  #ifdef HEATER_USES_THERMISTOR
+    current_raw = analogRead(TEMP_0_PIN); 
+    #ifdef DEBUG_HEAT_MGMT
+      log_int("_HEAT_MGMT - analogRead(TEMP_0_PIN)", current_raw);
+      log_int("_HEAT_MGMT - NUMTEMPS", NUMTEMPS);
+    #endif
+    // When using thermistor, when the heater is colder than targer temp, we get a higher analog reading than target, 
+    // this switches it up so that the reading appears lower than target for the control logic.
+    current_raw = 1023 - current_raw;
+  #elif defined HEATER_USES_AD595
+    current_raw = analogRead(TEMP_0_PIN);    
+  #elif defined HEATER_USES_MAX6675
+    current_raw = read_max6675();
+  #endif
+} */

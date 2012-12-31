@@ -428,7 +428,7 @@
 ****************************************************************************************/
 #if MOTHERBOARD == 33
 #define MOTHERBOARD 3
-#define RAMPS_V_1_3
+#define RAMPS_V_1_0
 #endif
 #if MOTHERBOARD == 3
 #define KNOWN_BOARD 1
@@ -442,7 +442,7 @@
 
 // uncomment one of the following lines for RAMPS v1.3 or v1.0, comment both for v1.2 or 1.1
 // #define RAMPS_V_1_3
-// #define RAMPS_V_1_0
+#define RAMPS_V_1_0
 
 #ifdef RAMPS_V_1_3
 
@@ -482,33 +482,39 @@
 
 #define HEATER_0_PIN       10
 #define HEATER_1_PIN       8
-#define TEMP_0_PIN         13   // ANALOG NUMBERING
-#define TEMP_1_PIN         14   // ANALOG NUMBERING
-#define TEMP_2_PIN         15   // ANALOG NUMBERING
+#define TEMP_0_PIN         14   // ANALOG NUMBERING
+#define TEMP_1_PIN         15   // ANALOG NUMBERING
+//#define TEMP_2_PIN         15   // ANALOG NUMBERING
 
 #else // RAMPS_V_1_1 or RAMPS_V_1_2 as default
 
 #define X_STEP_PIN         26
 #define X_DIR_PIN          28
 #define X_ENABLE_PIN       24
-#define X_MIN_PIN           3
+#define X_MIN_PIN          -1    //3
 #define X_MAX_PIN          -1    //2
 
 #define Y_STEP_PIN         38
 #define Y_DIR_PIN          40
 #define Y_ENABLE_PIN       36
-#define Y_MIN_PIN          16
+#define Y_MIN_PIN          -1    //16
 #define Y_MAX_PIN          -1    //17
 
 #define Z_STEP_PIN         44
 #define Z_DIR_PIN          46
 #define Z_ENABLE_PIN       42
-#define Z_MIN_PIN          18
+#define Z_MIN_PIN          -1    //18
 #define Z_MAX_PIN          -1    //19
 
+/*  Original pins used for stepper
 #define E_STEP_PIN         32
 #define E_DIR_PIN          34
 #define E_ENABLE_PIN       30
+*/
+#define E_STEP_PIN          8  //speed
+#define E_DIR_PIN          30  //dir_pinA
+#define E_ENABLE_PIN       31  //dir_pinB
+#define MOTOR_ENABLE_PIN   32  //enable pin (hopefully)
 
 #define SDPOWER            48
 #define SDSS               53
@@ -518,9 +524,9 @@
 #define ALARM_PIN          -1
 
 
-#ifdef RAMPS_V_1_0 // RAMPS_V_1_0
-  #define HEATER_0_PIN     12    // RAMPS 1.0
-  #define HEATER_1_PIN     -1    // RAMPS 1.0
+#ifdef RAMPS_V_1_0 // RAMPS_V_1_0 <---using
+  #define HEATER_0_PIN     12    // RAMPS 1.0 extruder heater power
+  #define HEATER_1_PIN     10    // RAMPS 1.0 bed heater power
   #define FAN_PIN          11    // RAMPS 1.0
 
 #else // RAMPS_V_1_1 or RAMPS_V_1_2
@@ -530,7 +536,10 @@
 #endif
 
 #define TEMP_0_PIN          2    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_1_PIN          1    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define TEMP_1_PIN         15    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+//#define TEMP_1_PIN          1    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+//#define THERMI_B_PIN       15   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define THERMI_B_PWR       53   // provide power for thermister
 #endif
 
 // SPI for Max6675 Thermocouple 
